@@ -1,5 +1,16 @@
 namespace miniecs;
 
+
+public struct Comp1(int v)
+{
+    public int V = v;
+};
+
+public struct Comp2
+{
+    string v;
+};
+
 public class Tests
 {
     [SetUp]
@@ -22,6 +33,26 @@ public class Tests
         var ent2 = world.NewEntity();
         Assert.AreEqual(ent1, ent11);
         Assert.AreNotEqual(ent11, ent2);
+    }
+
+    [Test]
+    public void AddRemoveComponents()
+    {
+        var world = new World();
+        var ent1 = world.NewEntity();
+        var ent2 = world.NewEntity();
+        Assert.That(ent1.Has<Comp1>(), Is.False);
+        Assert.That(ent1.Has<Comp2>(), Is.False);
+        ent1.Add(new Comp1(123));
+        Assert.That(ent1.Has<Comp1>(), Is.True);
+        Assert.That(ent1.Has<Comp2>(), Is.False);
+        ent2.Add(new Comp1(124));
+        Assert.That(ent1.Get<Comp1>().V, Is.EqualTo(123));
+        Assert.That(ent2.Get<Comp1>().V, Is.EqualTo(124));
+        ent1.Remove<Comp1>();
+        Assert.That(ent1.Has<Comp1>(), Is.False);
+        Assert.That(ent2.Has<Comp1>(), Is.True);
+        Assert.That(ent2.Get<Comp1>().V, Is.EqualTo(124));
     }
 
 }
