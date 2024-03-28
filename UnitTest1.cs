@@ -1,5 +1,6 @@
-namespace miniecs;
 
+
+using NUnit.Framework.Internal;
 
 public struct Comp1(int v)
 {
@@ -11,6 +12,37 @@ public struct Comp2(string v)
     public string V = v;
 };
 
+public class System1(ECS.World world) : ECS.System(world)
+{
+    public static List<string> Log = [];
+    public override void Init()
+    {
+        Log.Add("Init");
+    }
+    public override void PreProcess()
+    {
+        Log.Add("PreProcess");
+    }
+    public override void Execute()
+    {
+        Log.Add("Execute");
+    }
+    public override void Teardown()
+    {
+        Log.Add("Teardown");
+    }
+    public override ECS.Filter? Filter(ECS.World world)
+    {
+        Log.Add("Filter");
+        return world.Inc<Comp1>().Exc<Comp2>();
+    }
+
+    public override void Process(ECS.Entity e)
+    {
+        Log.Add(string.Format("Process {0}", e.Get<Comp1>().V.ToString()));
+    }
+}
+
 public class Tests
 {
     [SetUp]
@@ -21,13 +53,13 @@ public class Tests
     [Test]
     public void CreateWorld()
     {
-        var world = new World();
+        var world = new ECS.World();
     }
 
     [Test]
     public void CreateEntities()
     {
-        var world = new World();
+        var world = new ECS.World();
         var ent1 = world.NewEntity();
         var ent11 = ent1;
         var ent2 = world.NewEntity();
@@ -38,7 +70,7 @@ public class Tests
     [Test]
     public void AddRemoveComponents()
     {
-        var world = new World();
+        var world = new ECS.World();
         var ent1 = world.NewEntity();
         var ent2 = world.NewEntity();
         Assert.That(ent1.Has<Comp1>(), Is.False);
@@ -58,7 +90,7 @@ public class Tests
     [Test]
     public void GetRefSetComponents()
     {
-        var world = new World();
+        var world = new ECS.World();
         var ent1 = world.NewEntity();
         ent1.Add(new Comp1(123));
         var c1 = ent1.Get<Comp1>();
@@ -80,7 +112,7 @@ public class Tests
     [Test]
     public void SimpleIteration()
     {
-        var world = new World();
+        var world = new ECS.World();
         for (int i = 0; i < 10; i++)
         {
             var ent = world.NewEntity();
@@ -95,7 +127,7 @@ public class Tests
     [Test]
     public void IterationWithDeletion()
     {
-        var world = new World();
+        var world = new ECS.World();
         for (int i = 0; i < 10; i++)
         {
             var ent = world.NewEntity();
@@ -116,7 +148,7 @@ public class Tests
     [Test]
     public void SimpleFilters()
     {
-        var world = new World();
+        var world = new ECS.World();
         for (int i = 1; i < 11; i++)
         {
             var ent = world.NewEntity();
@@ -124,7 +156,7 @@ public class Tests
             if (i % 2 == 1)
                 ent.Add(new Comp2(i.ToString()));
         }
-        var filter = world.Filter().Inc<Comp1>().Exc<Comp2>();
+        var filter = world.Inc<Comp1>().Exc<Comp2>();
         int sum = 0;
         foreach (var ent in filter)
             sum += ent.Get<Comp1>().V;
@@ -134,7 +166,7 @@ public class Tests
     [Test]
     public void DestroyEntity()
     {
-        var world = new World();
+        var world = new ECS.World();
         var ent = world.NewEntity();
         ent.Add(new Comp1(123)).Add(new Comp2("Test"));
         ent.Destroy();

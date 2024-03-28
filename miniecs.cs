@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
-namespace miniecs;
+namespace ECS;
 
 
 public struct Entity
@@ -124,9 +124,9 @@ public class World
     return pools[type];
   }
 
-  public Filter Filter()
+  public Filter Inc<T>()
   {
-    return new Filter(this);
+    return new Filter(this).Inc<T>();
   }
 
 }
@@ -293,3 +293,71 @@ public class Filter(World aworld)
   }
 
 }
+
+public class System(World aworld)
+{
+  public World world = aworld;
+  public virtual void Init()
+  {
+
+  }
+  public virtual void PreProcess()
+  {
+
+  }
+  public virtual void Execute()
+  {
+
+  }
+  public virtual void Teardown()
+  {
+
+  }
+  public virtual Filter? Filter(World world)
+  {
+    return null;
+  }
+
+  public virtual void Process(Entity e)
+  {
+  }
+}
+
+
+public class Systems(World aworld) : System(aworld)
+{
+  List<System> children = [];
+  List<Filter?> filters = [];
+
+  public override void Init()
+  {
+    foreach (var child in children)
+      child.Init();
+    foreach (var child in children)
+      filters.Add(child.Filter(world));
+
+  }
+  public override void Execute()
+  {
+    foreach (var child in children)
+      child.PreProcess();
+    foreach (var sf in children.Zip(filters, Tuple.Create))
+      if (sf.Item2 is Filter flt)
+        foreach (var entity in flt)
+          sf.Item1.Process(entity);
+    foreach (var child in children)
+      child.Execute();
+  }
+  public override void Teardown()
+  {
+    foreach (var child in children)
+      child.Teardown();
+  }
+
+  public void Add(System sys)
+  {
+    children.Add(sys);
+  }
+}
+
+
