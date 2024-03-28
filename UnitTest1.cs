@@ -131,5 +131,17 @@ public class Tests
         Assert.That(sum, Is.EqualTo(2 + 4 + 6 + 8 + 10));
     }
 
+    [Test]
+    public void DestroyEntity()
+    {
+        var world = new World();
+        var ent = world.NewEntity();
+        ent.Add(new Comp1(123)).Add(new Comp2("Test"));
+        ent.Destroy();
+        Assert.That(ent.Has<Comp1>(), Is.False);
+        Assert.That(ent.Has<Comp2>(), Is.False);
+        ent.Destroy();
+        Assert.That(ent.Has<Comp1>(), Is.False);
+    }
 
 }

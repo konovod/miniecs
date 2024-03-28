@@ -36,6 +36,26 @@ public struct Entity
     return this;
   }
 
+  public Entity RemoveIfPresent<T>() where T : struct
+  {
+    if (Has<T>())
+      World.GetStorage<T>().Remove(Id);
+    return this;
+  }
+
+  public Entity Remove(Type type)
+  {
+    World.GetStorage(type).Remove(Id);
+    return this;
+  }
+
+  public Entity RemoveIfPresent(Type type)
+  {
+    if (Has(type))
+      World.GetStorage(type).Remove(Id);
+    return this;
+  }
+
   public Entity Set<T>(in T item) where T : struct
   {
     if (Has<T>())
@@ -63,6 +83,11 @@ public struct Entity
     return ref span[index];
   }
 
+  public void Destroy()
+  {
+    foreach (var type in World.pools.Keys)
+      RemoveIfPresent(type);
+  }
 
 }
 
