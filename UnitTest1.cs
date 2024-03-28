@@ -138,8 +138,11 @@ public class Tests
         var ent = world.NewEntity();
         ent.Add(new Comp1(123)).Add(new Comp2("Test"));
         ent.Destroy();
-        Assert.That(ent.Has<Comp1>(), Is.False);
-        Assert.That(ent.Has<Comp2>(), Is.False);
+        Assert.Multiple(() =>
+        {
+            Assert.That(ent.Has<Comp1>(), Is.False);
+            Assert.That(ent.Has<Comp2>(), Is.False);
+        });
         ent.Destroy();
         Assert.That(ent.Has<Comp1>(), Is.False);
     }

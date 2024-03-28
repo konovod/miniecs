@@ -106,7 +106,7 @@ public class World
 
   internal Pool<T> GetStorage<T>() where T : struct
   {
-    if (!pools.TryGetValue(typeof(T), out IPool pool))
+    if (!pools.TryGetValue(typeof(T), out IPool? pool))
     {
       pool = new Pool<T>();
       pools.Add(typeof(T), pool);
