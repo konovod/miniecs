@@ -55,4 +55,24 @@ public class Tests
         Assert.That(ent2.Get<Comp1>().V, Is.EqualTo(124));
     }
 
+    [Test]
+    public void GetRefComponents()
+    {
+        var world = new World();
+        var ent1 = world.NewEntity();
+        ent1.Add(new Comp1(123));
+        var c1 = ent1.Get<Comp1>();
+        Assert.That(c1.V, Is.EqualTo(123));
+        c1.V = 124;
+        Assert.That(c1.V, Is.EqualTo(124));
+        Assert.That(ent1.Get<Comp1>().V, Is.EqualTo(123));
+
+        ref var c2 = ref ent1.GetRef<Comp1>();
+        Assert.That(c2.V, Is.EqualTo(123));
+        c2.V = 125;
+        Assert.That(c2.V, Is.EqualTo(125));
+        Assert.That(ent1.Get<Comp1>().V, Is.EqualTo(125));
+
+    }
+
 }
