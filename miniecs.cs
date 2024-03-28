@@ -204,6 +204,12 @@ internal class Pool<T> : IPool where T : struct
     return Entities[id];
   }
 
+  public void Clear()
+  {
+    Entities.Clear();
+    Items.Clear();
+    IndexByEntity.Clear();
+  }
 
 }
 
@@ -381,6 +387,18 @@ public class Systems(World aworld) : System(aworld)
   {
     children.Add(sys);
   }
+
+  public void DelHere<T>() where T : struct
+  {
+    children.Add(new RemoveComponents<T>(world));
+  }
+
 }
 
-
+internal class RemoveComponents<T>(World aworld) : System(aworld) where T : struct
+{
+  public override void Execute()
+  {
+    world.GetStorage<T>().Clear();
+  }
+}

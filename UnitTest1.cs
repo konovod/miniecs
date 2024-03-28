@@ -207,4 +207,26 @@ public class Tests
         Assert.That(System1.Log, Is.EqualTo(new List<string> { "Teardown" }));
     }
 
+    [Test]
+    public void DelHereSystem()
+    {
+        var world = new ECS.World();
+        var systems = new ECS.Systems(world);
+        var ent = world.NewEntity().Add(new Comp1(123)).Add(new Comp2("test"));
+        systems.Init();
+        systems.DelHere<Comp2>();
+        Assert.Multiple(() =>
+        {
+            Assert.That(ent.Has<Comp1>(), Is.True);
+            Assert.That(ent.Has<Comp2>(), Is.True);
+        });
+        systems.Execute();
+        Assert.Multiple(() =>
+        {
+            Assert.That(ent.Has<Comp1>(), Is.True);
+            Assert.That(ent.Has<Comp2>(), Is.False);
+        });
+
+    }
+
 }
