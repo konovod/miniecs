@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Data.Common;
 using System.Runtime.InteropServices;
+// using System.Collections;
 
 namespace miniecs;
 
@@ -82,6 +83,16 @@ public class World
     return pool as Pool<T>;
   }
 
+  public ComponentEnumerable Each<T>() where T : struct
+  {
+    return new ComponentEnumerable(this, typeof(T));
+  }
+
+  internal IPool GetStorage(Type type)
+  {
+    return pools[type];
+  }
+
 }
 internal interface IPool
 {
@@ -90,6 +101,8 @@ internal interface IPool
   bool Has(int id);
   void Remove(int id);
   int Add(int id);
+
+  int IdByIndex(int id);
 }
 internal class Pool<T> : IPool where T : struct
 {
@@ -128,5 +141,61 @@ internal class Pool<T> : IPool where T : struct
     IndexByEntity.Add(id, index);
     return index;
   }
+
+  public int IdByIndex(int id)
+  {
+    return Entities[id];
+  }
+
+
+}
+
+public readonly struct ComponentEnumerable(World aworld, Type atype)
+{
+  readonly World world = aworld;
+  readonly Type type = atype;
+
+  public ComponentEnumerator GetEnumerator()
+  {
+    return new ComponentEnumerator(world, type);
+  }
+}
+
+
+public struct ComponentEnumerator(World aworld, Type atype)
+{
+  internal readonly World world = aworld;
+  internal readonly IPool pool = aworld.GetStorage(atype);
+  int index = 0;
+  int cached = -1;
+
+  public bool MoveNext()
+  {
+    if (index >= pool.Count())
+      return false;
+    int entity = pool.IdByIndex(index);
+    if (entity == cached)
+    {
+      index++;
+      if (index >= pool.Count())
+        return false;
+      cached = pool.IdByIndex(index);
+    }
+    else
+      cached = entity;
+    return true;
+  }
+
+  public Entity Current
+  {
+    get
+    {
+      Entity entity;
+      entity.World = world;
+      entity.Id = cached;
+      return entity;
+    }
+  }
+
 
 }

@@ -5,7 +5,7 @@
 +5. entity.Has<Comp1>() # Возвращает True если на сущности есть компонент Comp1
 +6. entity.Get<Comp1>() # Возвращает значение компонента Comp1 на сущности 
 +7. entity.GetRef<Comp1>() # Возвращает ссылку на компонент Comp1 на сущности 
-8. foreach(ent in world.Each<Comp1>()) # Итерация по всем сущностям имеющим компонент Comp1
++8. foreach(ent in world.Each<Comp1>()) # Итерация по всем сущностям имеющим компонент Comp1
 9. foreach(ent in world.EachEntity()) # Итерация по всем сущностям в мире (больше для отладочных целей)
 10. query = world.Query() # создает запрос к миру
 11. query.Inc<Comp1>() # добавляет к запросу условие "включает компонент Comp1"

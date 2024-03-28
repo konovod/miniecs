@@ -31,8 +31,8 @@ public class Tests
         var ent1 = world.NewEntity();
         var ent11 = ent1;
         var ent2 = world.NewEntity();
-        Assert.AreEqual(ent1, ent11);
-        Assert.AreNotEqual(ent11, ent2);
+        Assert.That(ent11, Is.EqualTo(ent1));
+        Assert.That(ent2, Is.Not.EqualTo(ent1));
     }
 
     [Test]
@@ -76,5 +76,43 @@ public class Tests
         Assert.That(ent1.Get<Comp1>().V, Is.EqualTo(125));
 
     }
+
+    [Test]
+    public void SimpleIteration()
+    {
+        var world = new World();
+        for (int i = 0; i < 10; i++)
+        {
+            var ent = world.NewEntity();
+            ent.Add(new Comp1(i + 1));
+        }
+        int sum = 0;
+        foreach (var ent in world.Each<Comp1>())
+            sum += ent.Get<Comp1>().V;
+        Assert.That(sum, Is.EqualTo(1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10));
+    }
+
+    [Test]
+    public void IterationWithDeletion()
+    {
+        var world = new World();
+        for (int i = 0; i < 10; i++)
+        {
+            var ent = world.NewEntity();
+            ent.Add(new Comp1(i + 1));
+        }
+        int sum = 0;
+        foreach (var ent in world.Each<Comp1>())
+        {
+            int i = ent.Get<Comp1>().V;
+            if (i % 2 == 1)
+                ent.Remove<Comp1>();
+            else
+                sum += i;
+        }
+        Assert.That(sum, Is.EqualTo(2 + 4 + 6 + 8 + 10));
+    }
+
+
 
 }
