@@ -1,7 +1,8 @@
 using System.ComponentModel;
 using System.Data.Common;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
-// using System.Collections;
+using System.Text.Json.Serialization;
 
 namespace miniecs;
 
@@ -22,6 +23,11 @@ public struct Entity
   public readonly bool Has<T>() where T : struct
   {
     return World.GetStorage<T>().Has(Id);
+  }
+
+  public readonly bool Has(Type type)
+  {
+    return World.GetStorage(type).Has(Id);
   }
 
   public Entity Remove<T>() where T : struct
@@ -71,7 +77,7 @@ public class World
     return entity;
   }
 
-  internal Dictionary<Type, IPool> pools = new();
+  internal Dictionary<Type, IPool> pools = [];
 
   internal Pool<T> GetStorage<T>() where T : struct
   {
@@ -93,6 +99,11 @@ public class World
     return pools[type];
   }
 
+  public Filter Filter()
+  {
+    return new Filter(this);
+  }
+
 }
 internal interface IPool
 {
@@ -109,7 +120,7 @@ internal class Pool<T> : IPool where T : struct
   public int Count() { return Items.Count; }
   public List<T> Items = new(128);
   public List<int> Entities = new(128);
-  public Dictionary<int, int> IndexByEntity = new();
+  public Dictionary<int, int> IndexByEntity = [];
 
   public int Find(int id)
   {
@@ -196,6 +207,64 @@ public struct ComponentEnumerator(World aworld, Type atype)
       return entity;
     }
   }
+}
 
+public struct FilterEnumerator(Filter afilter, ComponentEnumerator aunder)
+{
+  internal readonly Filter filter = afilter;
+  internal ComponentEnumerator under = aunder;
+
+  public bool MoveNext()
+  {
+    while (true)
+    {
+      if (!under.MoveNext())
+        return false;
+      if (filter.Satisfy(under.Current))
+        return true;
+    }
+  }
+
+  public Entity Current
+  {
+    get => under.Current;
+  }
+}
+
+
+public class Filter(World aworld)
+{
+  World world = aworld;
+  List<Type> Included = [];
+  List<Type> Excluded = [];
+
+  public Filter Inc<T>()
+  {
+    Included.Add(typeof(T));
+    return this;
+  }
+
+  public Filter Exc<T>()
+  {
+    Excluded.Add(typeof(T));
+    return this;
+  }
+
+  public bool Satisfy(Entity entity)
+  {
+    foreach (var typ in Included)
+      if (!entity.Has(typ))
+        return false;
+    foreach (var typ in Excluded)
+      if (entity.Has(typ))
+        return false;
+    return true;
+  }
+
+  public FilterEnumerator GetEnumerator()
+  {
+    var best = Included.MinBy(v => world.GetStorage(v).Count());
+    return new FilterEnumerator(this, new ComponentEnumerator(world, best));
+  }
 
 }

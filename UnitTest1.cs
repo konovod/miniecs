@@ -6,9 +6,9 @@ public struct Comp1(int v)
     public int V = v;
 };
 
-public struct Comp2
+public struct Comp2(string v)
 {
-    string v;
+    public string V = v;
 };
 
 public class Tests
@@ -113,6 +113,23 @@ public class Tests
         Assert.That(sum, Is.EqualTo(2 + 4 + 6 + 8 + 10));
     }
 
+    [Test]
+    public void SimpleFilters()
+    {
+        var world = new World();
+        for (int i = 1; i < 11; i++)
+        {
+            var ent = world.NewEntity();
+            ent.Add(new Comp1(i));
+            if (i % 2 == 1)
+                ent.Add(new Comp2(i.ToString()));
+        }
+        var filter = world.Filter().Inc<Comp1>().Exc<Comp2>();
+        int sum = 0;
+        foreach (var ent in filter)
+            sum += ent.Get<Comp1>().V;
+        Assert.That(sum, Is.EqualTo(2 + 4 + 6 + 8 + 10));
+    }
 
 
 }
