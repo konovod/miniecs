@@ -56,7 +56,7 @@ public class Tests
     }
 
     [Test]
-    public void GetRefComponents()
+    public void GetRefSetComponents()
     {
         var world = new World();
         var ent1 = world.NewEntity();
@@ -66,9 +66,11 @@ public class Tests
         c1.V = 124;
         Assert.That(c1.V, Is.EqualTo(124));
         Assert.That(ent1.Get<Comp1>().V, Is.EqualTo(123));
+        ent1.Set(c1);
+        Assert.That(ent1.Get<Comp1>().V, Is.EqualTo(124));
 
         ref var c2 = ref ent1.GetRef<Comp1>();
-        Assert.That(c2.V, Is.EqualTo(123));
+        Assert.That(c2.V, Is.EqualTo(124));
         c2.V = 125;
         Assert.That(c2.V, Is.EqualTo(125));
         Assert.That(ent1.Get<Comp1>().V, Is.EqualTo(125));
