@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [master]
+jobs:
+  build:
+    name: Test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest }
+          - { os: macos-latest }
+          - { os: windows-latest }
+    runs-on: ${{matrix.os}}
+    steps:
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+      - name: Display dotnet version
+        run: dotnet --version        
+      - uses: actions/checkout@v4
+      - run: dotnet test
