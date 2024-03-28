@@ -179,4 +179,32 @@ public class Tests
         Assert.That(ent.Has<Comp1>(), Is.False);
     }
 
+    [Test]
+    public void SimpleSystem()
+    {
+        var world = new ECS.World();
+        var systems = new ECS.Systems(world);
+
+        systems.Add(new System1(world));
+
+        Assert.That(System1.Log, Is.Empty);
+
+        systems.Init();
+        Assert.That(System1.Log, Is.EqualTo(new List<string> { "Init", "Filter" }));
+
+        System1.Log.Clear();
+        systems.Execute();
+        Assert.That(System1.Log, Is.EqualTo(new List<string> { "PreProcess", "Execute" }));
+
+        System1.Log.Clear();
+        world.NewEntity().Add(new Comp1(123)).Add(new Comp2("test"));
+        world.NewEntity().Add(new Comp1(124));
+        systems.Execute();
+        Assert.That(System1.Log, Is.EqualTo(new List<string> { "PreProcess", "Process 124", "Execute" }));
+
+        System1.Log.Clear();
+        systems.Teardown();
+        Assert.That(System1.Log, Is.EqualTo(new List<string> { "Teardown" }));
+    }
+
 }

@@ -13,7 +13,7 @@
 +13. foreach(ent in query) # итерация сущностей удовлетворяющих запросу query
 +14. entity.Destroy() # Удаление сущности entity
 +15. systems = ECS::Systems.new(world) # Создание группы систем
-16. systems.Add(new System1(world))  # Добавление системы System1 к группе систем
++16. systems.Add(new System1(world))  # Добавление системы System1 к группе систем
 +17. systems.Init() # Вызов Init у всех систем группы, создание фильтров всех систем группы
 +18. systems.Execute() # Вызов Execute у всех систем группы, вызов Process у всех систем группы для каждого entity из соотв.фильтра
 +19. systems.Teardown() # Вызов Teardown у всех систем группы

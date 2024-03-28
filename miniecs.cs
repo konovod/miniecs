@@ -27,7 +27,10 @@ public struct Entity
 
   public readonly bool Has(Type type)
   {
-    return World.GetStorage(type).Has(Id);
+    if (World.GetStorage(type) is IPool storage)
+      return storage.Has(Id);
+    else
+      return false;
   }
 
   public Entity Remove<T>() where T : struct
@@ -119,9 +122,27 @@ public class World
     return new ComponentEnumerable(this, typeof(T));
   }
 
-  internal IPool GetStorage(Type type)
+  internal IPool? GetStorage(Type type)
   {
-    return pools[type];
+    if (pools.TryGetValue(type, out IPool? result))
+      return result;
+    else
+      return null;
+  }
+
+  public int CountComponents<T>() where T : struct
+  {
+    if (pools.TryGetValue(typeof(T), out IPool? result))
+      return result.Count();
+    else
+      return 0;
+  }
+  public int CountComponents(Type type)
+  {
+    if (pools.TryGetValue(type, out IPool? result))
+      return result.Count();
+    else
+      return 0;
   }
 
   public Filter Inc<T>()
@@ -201,12 +222,14 @@ public readonly struct ComponentEnumerable(World aworld, Type atype)
 public struct ComponentEnumerator(World aworld, Type atype)
 {
   internal readonly World world = aworld;
-  internal readonly IPool pool = aworld.GetStorage(atype);
+  internal readonly IPool? pool = aworld.GetStorage(atype);
   int index = 0;
   int cached = -1;
 
   public bool MoveNext()
   {
+    if (pool is null)
+      return false;
     if (index >= pool.Count())
       return false;
     int entity = pool.IdByIndex(index);
@@ -288,7 +311,7 @@ public class Filter(World aworld)
 
   public FilterEnumerator GetEnumerator()
   {
-    var best = Included.MinBy(v => world.GetStorage(v).Count());
+    var best = Included.MinBy(v => world.CountComponents(v));
     return new FilterEnumerator(this, new ComponentEnumerator(world, best));
   }
 
