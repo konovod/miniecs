@@ -1,11 +1,9 @@
-
-
 using NUnit.Framework.Internal;
-
+using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace UnitTests
 {
-
     public struct Comp1
     {
         public Comp1(int v) { V = v; }

@@ -280,9 +280,11 @@ namespace ECS
       return new ComponentEnumerator(world, type);
     }
   }
-  public readonly struct WorldEnumerable(World aworld)
+  public readonly struct WorldEnumerable
   {
-    readonly World world = aworld;
+
+    public WorldEnumerable(World aworld) { world = aworld; }
+    readonly World world;
 
     public WorldEnumerator GetEnumerator()
     {
@@ -340,10 +342,15 @@ namespace ECS
       }
     }
   }
-  public struct WorldEnumerator(World aworld)
+  public struct WorldEnumerator
   {
-    internal readonly World world = aworld;
-    internal IEnumerator<int> under = aworld.component_counts.Keys.GetEnumerator();
+    public WorldEnumerator(World aworld)
+    {
+      world = aworld;
+      under = aworld.component_counts.Keys.GetEnumerator();
+    }
+    internal readonly World world;
+    internal IEnumerator<int> under;
 
     public bool MoveNext()
     {
