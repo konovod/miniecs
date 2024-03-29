@@ -1,6 +1,8 @@
 using NUnit.Framework.Internal;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System;
+using System.Linq;
 
 namespace UnitTests
 {
@@ -47,6 +49,29 @@ namespace UnitTests
             Log.Add(string.Format("Process {0}", e.Get<Comp1>().V.ToString()));
         }
     }
+
+    public class SlowSystem : ECS.System
+    {
+        internal SlowSystem(ECS.World aworld) : base(aworld) { }
+        public override void PreProcess()
+        {
+            System.Threading.Thread.Sleep(10);
+        }
+        public override void Execute()
+        {
+            System.Threading.Thread.Sleep(10);
+        }
+        public override ECS.Filter? Filter(ECS.World world)
+        {
+            return world.Inc<Comp1>().Exc<Comp2>();
+        }
+
+        public override void Process(ECS.Entity e)
+        {
+            System.Threading.Thread.Sleep(10);
+        }
+    }
+
 
     public class Tests
     {
@@ -210,6 +235,7 @@ namespace UnitTests
             System1.Log.Clear();
             systems.Teardown();
             Assert.That(System1.Log, Is.EqualTo(new List<string> { "Teardown" }));
+            systems.Statistics.ToList().ForEach(x => Console.WriteLine(x.Key + " : " + x.Value));
         }
 
         [Test]
@@ -278,8 +304,38 @@ namespace UnitTests
             foreach (var ent in world.EachEntity())
                 sum += 1;
             Assert.That(sum, Is.EqualTo(0));
-
         }
 
+        [Test]
+        public void BenchmarkSystem()
+        {
+            var world = new ECS.World();
+            var systems = new ECS.Systems(world);
+
+            systems.Add(new SlowSystem(world));
+
+            systems.Init();
+            systems.Execute();
+            systems.Statistics.ToList().ForEach(x => Console.WriteLine(x.Key + " : " + x.Value));
+            Assert.Multiple(() =>
+            {
+                Assert.That(systems.Statistics["Total"], Is.GreaterThan(19).And.LessThan(25));
+                Assert.That(systems.Statistics["UnitTests.SlowSystem"], Is.GreaterThan(19).And.LessThan(25));
+                Assert.That(systems.Statistics["Total"], Is.GreaterThanOrEqualTo(systems.Statistics["UnitTests.SlowSystem"]));
+            });
+            world.NewEntity().Add(new Comp1(123)).Add(new Comp2("test"));
+            world.NewEntity().Add(new Comp1(124));
+            world.NewEntity().Add(new Comp1(125));
+            systems.Execute();
+            systems.Statistics.ToList().ForEach(x => Console.WriteLine(x.Key + " : " + x.Value));
+            Assert.Multiple(() =>
+            {
+                Assert.That(systems.Statistics["Total"], Is.GreaterThan(39).And.LessThan(45));
+                Assert.That(systems.Statistics["UnitTests.SlowSystem"], Is.GreaterThan(39).And.LessThan(45));
+                Assert.That(systems.Statistics["Total"], Is.GreaterThanOrEqualTo(systems.Statistics["UnitTests.SlowSystem"]));
+            });
+            Console.WriteLine("Overhead: " + (systems.Statistics["Total"] * 2 - systems.Statistics.Values.Sum()));
+            systems.Teardown();
+        }
     }
 }

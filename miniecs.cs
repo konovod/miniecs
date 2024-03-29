@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System;
+using System.Diagnostics;
 
 namespace ECS
 {
@@ -498,6 +499,9 @@ namespace ECS
     public Systems(World aworld) : base(aworld) { }
     List<System> children = new();
     List<Filter?> filters = new();
+    List<Stopwatch> Timers = new();
+    Stopwatch FullTimer = new();
+    public Dictionary<String, double> Statistics = new();
 
     public override void Init()
     {
@@ -505,23 +509,58 @@ namespace ECS
         child.Init();
       foreach (var child in children)
         filters.Add(child.Filter(world));
-
+      foreach (var child in children)
+      {
+        Timers.Add(new Stopwatch());
+        Statistics.Add(child.GetType().ToString(), 0);
+      }
+      Statistics.Add("Total", 0);
     }
+
     public override void Execute()
     {
-      foreach (var child in children)
-        child.PreProcess();
+      FullTimer.Reset();
+      FullTimer.Start();
+      foreach (var timer in Timers)
+        timer.Reset();
+
       int i = 0;
+      foreach (var child in children)
+      {
+        Timers[i].Start();
+        child.PreProcess();
+        Timers[i].Stop();
+        i++;
+      }
+      i = 0;
       foreach (var child in children)
       {
         var fltx = filters[i];
         if (fltx is Filter flt)
+        {
+          Timers[i].Start();
           foreach (var entity in flt)
             child.Process(entity);
+          Timers[i].Stop();
+        }
         i += 1;
       }
+      i = 0;
       foreach (var child in children)
+      {
+        Timers[i].Start();
         child.Execute();
+        Timers[i].Stop();
+        i += 1;
+      }
+      i = 0;
+      foreach (var child in children)
+      {
+        Statistics[child.GetType().ToString()] = Timers[i].ElapsedTicks * 1000.0 / Stopwatch.Frequency;
+        i += 1;
+      }
+      FullTimer.Stop();
+      Statistics["Total"] = FullTimer.ElapsedTicks * 1000.0 / Stopwatch.Frequency;
     }
     public override void Teardown()
     {
