@@ -21,6 +21,8 @@ jobs:
         run: |
           json_raw='{"sdk":{"version": "${{ steps.stepid.outputs.dotnet-version }}"}}'
           echo "$json_raw" > ./global.json
+          ls
+          cat ./global.json
       - name: Display dotnet version
         run: dotnet --version        
       - uses: actions/checkout@v4
