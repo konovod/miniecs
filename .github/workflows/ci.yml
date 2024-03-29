@@ -10,13 +10,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dotnet-version: [ '4.6.x','6.0.x','8.0.x' ]
+        dotnet-version: [ '4.x','6.x','8.x' ]
     runs-on: ubuntu-latest
     steps:
       - name: Setup dotnet ${{matrix.dotnet-version}}
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Create temporary global.json
+        run: echo '{"sdk":{"version": "${{ steps.stepid.outputs.dotnet-version }}"}}'          
       - name: Display dotnet version
         run: dotnet --version        
       - uses: actions/checkout@v4

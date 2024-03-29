@@ -6,20 +6,22 @@ using NUnit.Framework.Internal;
 namespace UnitTests
 {
 
-    public struct Comp1(int v)
+    public struct Comp1
     {
-        public int V = v;
+        public Comp1(int v) { V = v; }
+        public int V;
     };
 
-    public struct Comp2(string v)
+    public struct Comp2
     {
-        public string V = v;
+        public Comp2(string v) { V = v; }
+        public string V;
     };
 
     public class System1 : ECS.System
     {
         internal System1(ECS.World aworld) : base(aworld) { }
-        public static List<string> Log = [];
+        public static List<string> Log = new();
         public override void Init()
         {
             Log.Add("Init");
