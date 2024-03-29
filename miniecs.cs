@@ -17,6 +17,7 @@ namespace ECS
       Pool<T> pool = World.GetStorage<T>();
       int index = pool.Add(Id);
       pool.Items.Items[index] = item;
+      World.IncComponentCount(Id);
       return this;
     }
 
@@ -36,26 +37,34 @@ namespace ECS
     public Entity Remove<T>() where T : struct
     {
       World.GetStorage<T>().Remove(Id);
+      World.DecComponentCount(Id);
       return this;
     }
 
     public Entity RemoveIfPresent<T>() where T : struct
     {
       if (Has<T>())
+      {
         World.GetStorage<T>().Remove(Id);
+        World.DecComponentCount(Id);
+      }
       return this;
     }
 
     public Entity Remove(Type type)
     {
       World.GetStorage(type).Remove(Id);
+      World.DecComponentCount(Id);
       return this;
     }
 
     public Entity RemoveIfPresent(Type type)
     {
       if (Has(type))
+      {
         World.GetStorage(type).Remove(Id);
+        World.DecComponentCount(Id);
+      }
       return this;
     }
 
@@ -89,22 +98,35 @@ namespace ECS
     {
       foreach (var type in World.pools.Keys)
         RemoveIfPresent(type);
+      World.component_counts.Remove(Id);
     }
 
   }
 
   public class World
   {
-    protected int EntitiesCount;
+    internal int EntitiesCount;
     public Entity NewEntity()
     {
       Entity entity;
       entity.World = this;
       entity.Id = EntitiesCount++;
+      component_counts.Add(entity.Id, 0);
       return entity;
     }
 
     internal Dictionary<Type, IPool> pools = new();
+    internal Dictionary<int, int> component_counts = new();
+    internal void IncComponentCount(int id)
+    {
+      component_counts[id] += 1;
+    }
+    internal void DecComponentCount(int id)
+    {
+      component_counts[id] -= 1;
+      if (component_counts[id] == 0)
+        component_counts.Remove(id);
+    }
 
     internal Pool<T> GetStorage<T>() where T : struct
     {
@@ -120,7 +142,10 @@ namespace ECS
     {
       return new ComponentEnumerable(this, typeof(T));
     }
-
+    public WorldEnumerable EachEntity()
+    {
+      return new WorldEnumerable(this);
+    }
     internal IPool? GetStorage(Type type)
     {
       if (pools.TryGetValue(type, out IPool? result))
@@ -128,7 +153,6 @@ namespace ECS
       else
         return null;
     }
-
     public int CountComponents<T>() where T : struct
     {
       if (pools.TryGetValue(typeof(T), out IPool? result))
@@ -256,6 +280,15 @@ namespace ECS
       return new ComponentEnumerator(world, type);
     }
   }
+  public readonly struct WorldEnumerable(World aworld)
+  {
+    readonly World world = aworld;
+
+    public WorldEnumerator GetEnumerator()
+    {
+      return new WorldEnumerator(world);
+    }
+  }
 
 
   public struct ComponentEnumerator
@@ -303,6 +336,27 @@ namespace ECS
         Entity entity;
         entity.World = world;
         entity.Id = cached;
+        return entity;
+      }
+    }
+  }
+  public struct WorldEnumerator(World aworld)
+  {
+    internal readonly World world = aworld;
+    internal IEnumerator<int> under = aworld.component_counts.Keys.GetEnumerator();
+
+    public bool MoveNext()
+    {
+      return under.MoveNext();
+    }
+
+    public Entity Current
+    {
+      get
+      {
+        Entity entity;
+        entity.World = world;
+        entity.Id = under.Current;
         return entity;
       }
     }
@@ -476,13 +530,15 @@ namespace ECS
   internal class RemoveComponents<T> : System where T : struct
   {
 
-    internal RemoveComponents(World aworld) : base(aworld)
-    {
-    }
+    internal RemoveComponents(World aworld) : base(aworld) { }
 
     public override void Execute()
     {
-      world.GetStorage<T>().Clear();
+      var pool = world.GetStorage<T>();
+      foreach (var id in pool.Entities)
+        world.DecComponentCount(id);
+      pool.Clear();
+
     }
   }
 }

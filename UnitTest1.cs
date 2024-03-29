@@ -12,8 +12,9 @@ public struct Comp2(string v)
     public string V = v;
 };
 
-public class System1(ECS.World world) : ECS.System(world)
+public class System1 : ECS.System
 {
+    internal System1(ECS.World aworld) : base(aworld) { }
     public static List<string> Log = [];
     public override void Init()
     {
@@ -226,6 +227,53 @@ public class Tests
             Assert.That(ent.Has<Comp1>(), Is.True);
             Assert.That(ent.Has<Comp2>(), Is.False);
         });
+
+    }
+
+    [Test]
+    public void EntityIteration()
+    {
+        var world = new ECS.World();
+        for (int i = 0; i < 10; i++)
+        {
+            var ent = world.NewEntity();
+            ent.Add(new Comp1(i + 1));
+        }
+        int sum = 0;
+        foreach (var ent in world.EachEntity())
+            sum += ent.Get<Comp1>().V;
+        Assert.That(sum, Is.EqualTo(1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10));
+
+
+        foreach (var ent in world.Each<Comp1>())
+            ent.Remove<Comp1>();
+
+        sum = 0;
+        foreach (var ent in world.EachEntity())
+            sum += 1;
+        Assert.That(sum, Is.EqualTo(0));
+
+        for (int i = 0; i < 10; i++)
+        {
+            var ent = world.NewEntity();
+            ent.Add(new Comp1(i + 1));
+        }
+
+        var systems = new ECS.Systems(world);
+        systems.DelHere<Comp1>();
+        systems.Init();
+
+        sum = 0;
+        foreach (var ent in world.EachEntity())
+            sum += 1;
+        Assert.That(sum, Is.EqualTo(10));
+
+        systems.Execute();
+
+        sum = 0;
+        foreach (var ent in world.EachEntity())
+            sum += 1;
+        Assert.That(sum, Is.EqualTo(0));
 
     }
 
