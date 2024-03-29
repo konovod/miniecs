@@ -10,14 +10,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { os: ubuntu-latest }
-          - { os: macos-latest }
-          - { os: windows-latest }
-    runs-on: ${{matrix.os}}
+        dotnet-version: [ '4.6.x','6.0.x','8.0.x' ]
+    runs-on: ubuntu-latest
     steps:
-      - name: Setup dotnet
+      - name: Setup dotnet ${{matrix.dotnet-version}}
         uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
       - name: Display dotnet version
         run: dotnet --version        
       - uses: actions/checkout@v4
