@@ -213,8 +213,8 @@ public class Tests
         var world = new ECS.World();
         var systems = new ECS.Systems(world);
         var ent = world.NewEntity().Add(new Comp1(123)).Add(new Comp2("test"));
-        systems.Init();
         systems.DelHere<Comp2>();
+        systems.Init();
         Assert.Multiple(() =>
         {
             Assert.That(ent.Has<Comp1>(), Is.True);
