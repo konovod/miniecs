@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dotnet-version: [ '4.x','6.x','8.x' ]
+        dotnet-version: [ '5.x','6.x','8.x' ]
     runs-on: ubuntu-latest
     steps:
       - name: Setup dotnet ${{matrix.dotnet-version}}
