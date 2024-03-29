@@ -1,6 +1,6 @@
-using System.Linq.Expressions;
+#nullable enable
+
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System;
 
 namespace ECS
@@ -16,7 +16,7 @@ namespace ECS
     {
       Pool<T> pool = World.GetStorage<T>();
       int index = pool.Add(Id);
-      pool.Items[index] = item;
+      pool.Items.Items[index] = item;
       return this;
     }
 
@@ -65,7 +65,7 @@ namespace ECS
       {
         Pool<T> pool = World.GetStorage<T>();
         int index = pool.IndexByEntity[Id];
-        pool.Items[index] = item;
+        pool.Items.Items[index] = item;
       }
       else
         Add(item);
@@ -76,14 +76,13 @@ namespace ECS
     {
       Pool<T> pool = World.GetStorage<T>();
       int index = pool.Find(Id);
-      return pool.Items[index];
+      return pool.Items.Items[index];
     }
     public ref T GetRef<T>() where T : struct
     {
       Pool<T> pool = World.GetStorage<T>();
       int index = pool.Find(Id);
-      var span = CollectionsMarshal.AsSpan(pool.Items);
-      return ref span[index];
+      return ref pool.Items.Items[index];
     }
 
     public void Destroy()
@@ -161,10 +160,38 @@ namespace ECS
 
     int IdByIndex(int id);
   }
+
+  // Created because older c# do not support getting ref on a list element
+  internal class MyList<T>
+  {
+    public T[] Items = new T[128];
+    public int Count { get; private set; } = 0;
+
+    public MyList() { }
+    public void Add(T item)
+    {
+      if (Count >= Items.Length)
+      {
+        Array.Resize(ref Items, Items.Length * 2);
+      }
+      Items[Count] = item;
+      Count++;
+    }
+    public void RemoveLast()
+    {
+      Count--;
+    }
+    public void Clear()
+    {
+      Count = 0;
+    }
+
+  }
+
   internal class Pool<T> : IPool where T : struct
   {
     public int Count() { return Items.Count; }
-    public List<T> Items = new(128);
+    public MyList<T> Items = new();
     public List<int> Entities = new(128);
     public Dictionary<int, int> IndexByEntity = new();
 
@@ -183,10 +210,10 @@ namespace ECS
       if (index != last)
       {
         IndexByEntity[Entities[last]] = index;
-        Items[index] = Items[last];
+        Items.Items[index] = Items.Items[last];
         Entities[index] = Entities[last];
       }
-      Items.RemoveAt(last);
+      Items.RemoveLast();
       Entities.RemoveAt(last);
       IndexByEntity.Remove(id);
     }
