@@ -97,7 +97,8 @@ namespace ECS
     public void Destroy()
     {
       foreach (var type in World.pools.Keys)
-        RemoveIfPresent(type);
+        if (Has(type))
+          World.GetStorage(type).Remove(Id);
       World.component_counts.Remove(Id);
     }
 
@@ -105,12 +106,12 @@ namespace ECS
 
   public class World
   {
-    internal int EntitiesCount;
+    internal int MaxEntityID;
     public Entity NewEntity()
     {
       Entity entity;
       entity.World = this;
-      entity.Id = EntitiesCount++;
+      entity.Id = MaxEntityID++;
       component_counts.Add(entity.Id, 0);
       return entity;
     }
@@ -146,6 +147,12 @@ namespace ECS
     {
       return new WorldEnumerable(this);
     }
+
+    public int EntitiesCount()
+    {
+      return component_counts.Count;
+    }
+
     internal IPool? GetStorage(Type type)
     {
       if (pools.TryGetValue(type, out IPool? result))
