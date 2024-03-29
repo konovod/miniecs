@@ -153,6 +153,13 @@ namespace ECS
       return component_counts.Count;
     }
 
+    public void DeleteAll()
+    {
+      component_counts.Clear();
+      foreach (var pool in pools.Values)
+        pool.Clear();
+    }
+
     internal IPool? GetStorage(Type type)
     {
       if (pools.TryGetValue(type, out IPool? result))
@@ -187,6 +194,7 @@ namespace ECS
     bool Has(int id);
     void Remove(int id);
     int IdByIndex(int id);
+    void Clear();
   }
 
   // Created because older c# do not support getting ref on a list element

@@ -95,6 +95,7 @@ namespace UnitTests
             var ent2 = world.NewEntity();
             Assert.That(ent11, Is.EqualTo(ent1));
             Assert.That(ent2, Is.Not.EqualTo(ent1));
+            Assert.That(world.EntitiesCount, Is.EqualTo(2));
         }
 
         [Test]
@@ -204,6 +205,7 @@ namespace UnitTests
             {
                 Assert.That(ent.Has<Comp1>(), Is.False);
                 Assert.That(ent.Has<Comp2>(), Is.False);
+                Assert.That(world.EntitiesCount, Is.EqualTo(0));
             });
             ent.Destroy();
             Assert.That(ent.Has<Comp1>(), Is.False);
@@ -337,5 +339,20 @@ namespace UnitTests
             Console.WriteLine("Overhead: " + (systems.Statistics["Total"] * 2 - systems.Statistics.Values.Sum()));
             systems.Teardown();
         }
+
+        [Test]
+        public void ClearWorld()
+        {
+            var world = new ECS.World();
+            for (int i = 0; i < 10; i++)
+            {
+                var ent = world.NewEntity();
+                ent.Add(new Comp1(i + 1));
+            }
+            Assert.That(world.EntitiesCount, Is.EqualTo(10));
+            world.DeleteAll();
+            Assert.That(world.EntitiesCount, Is.EqualTo(0));
+        }
+
     }
 }
