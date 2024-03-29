@@ -16,8 +16,7 @@ namespace ECS
     public Entity Add<T>(in T item) where T : struct
     {
       Pool<T> pool = World.GetStorage<T>();
-      int index = pool.Add(Id);
-      pool.Items.Items[index] = item;
+      pool.Add(Id, item);
       World.IncComponentCount(Id);
       return this;
     }
@@ -85,13 +84,13 @@ namespace ECS
     public readonly T Get<T>() where T : struct
     {
       Pool<T> pool = World.GetStorage<T>();
-      int index = pool.Find(Id);
+      int index = pool.IndexById(Id);
       return pool.Items.Items[index];
     }
     public ref T GetRef<T>() where T : struct
     {
       Pool<T> pool = World.GetStorage<T>();
-      int index = pool.Find(Id);
+      int index = pool.IndexById(Id);
       return ref pool.Items.Items[index];
     }
 
@@ -185,11 +184,8 @@ namespace ECS
   internal interface IPool
   {
     int Count();
-    int Find(int id);
     bool Has(int id);
     void Remove(int id);
-    int Add(int id);
-
     int IdByIndex(int id);
   }
 
@@ -227,10 +223,6 @@ namespace ECS
     public List<int> Entities = new(128);
     public Dictionary<int, int> IndexByEntity = new();
 
-    public int Find(int id)
-    {
-      return IndexByEntity[id];
-    }
     public bool Has(int id)
     {
       return IndexByEntity.ContainsKey(id);
@@ -249,15 +241,19 @@ namespace ECS
       Entities.RemoveAt(last);
       IndexByEntity.Remove(id);
     }
-    public int Add(int id)
+    public void Add(int id, T item)
     {
       Items.Add(default);
       Entities.Add(id);
       int index = Items.Count - 1;
       IndexByEntity.Add(id, index);
-      return index;
+      Items.Items[index] = item;
     }
 
+    public int IndexById(int id)
+    {
+      return IndexByEntity[id];
+    }
     public int IdByIndex(int id)
     {
       return Entities[id];
