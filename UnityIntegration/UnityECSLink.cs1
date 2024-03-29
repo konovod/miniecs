@@ -1,0 +1,93 @@
+using UnityEngine;
+using ECS;
+
+
+// ECS side of the link
+namespace RTSToolkitFree
+{
+
+  public struct LinkedGameObject
+  {
+    public GameObject Obj;
+  };
+
+  public struct DestroyGameObject { };
+
+  public struct InstantiateGameObject
+  {
+    public GameObject Template;
+    public Vector3 pos;
+    public Quaternion rot;
+  };
+
+  public class ProcessGameObjects : ECS.System
+  {
+    internal ProcessGameObjects(ECS.World aworld) : base(aworld) { }
+    public override void Execute()
+    {
+      // remove game objects
+      foreach (var ent in World.Each<DestroyGameObject>())
+      {
+        ent.Get<LinkedGameObject>().Destroy();
+        ent.Destroy();
+      }
+      // instantiate game objects
+      foreach (var ent in World.Each<InstantiateGameObject>())
+      {
+        var info = ent.Get<InstantiateGameObject>();
+        LinkedGameObject linked;
+        linked.Obj = Instantiate(info.Template, info.pos, info.rot);
+        ent.Remove<InstantiateGameObject>();
+        ent.Add(linked);
+      }
+    }
+  }
+}
+
+//Unity side of the link
+namespace RTSToolkitFree
+{
+  public class LinkedEntity : MonoBehaviour
+  {
+    public ECS.Entity entity;
+  }
+
+  public class ECSWorldContainer : MonoBehaviour
+  {
+    public static ECSWorldContainer Active;
+    public ECS.World world = new();
+    public ECS.Systems OnUpdate;
+    public ECS.Systems OnFixedUpdate;
+
+    void Awake()
+    {
+      Active = this;
+      OnUpdate = new ECS.Systems(world);
+      ////////////////// add here systems that is called on Update
+      OnUpdate.Add(new )
+
+      ///
+      ////////////////// add here systems that is called on FixedUpdate
+
+      ///
+
+    }
+
+
+  }
+
+
+  public class SystemsRunner : MonoBehaviour
+  {
+
+
+    void Start()
+    {
+
+    }
+
+
+  }
+
+
+}
