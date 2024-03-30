@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityECSLink;
 
+//Контейнер для "мира" и систем ецс. Ставится на сцену в единственном экземлпяре 
+// В этот класс добавляются все системы игры
 public class ECSWorldContainer : MonoBehaviour
 {
     public static ECSWorldContainer Active;
@@ -16,7 +18,7 @@ public class ECSWorldContainer : MonoBehaviour
         OnUpdate = new ECS.Systems(world);
         ////////////////// add here systems that is called on Update
         OnUpdate.Add(new ProcessGameObjects(world));
-        // OnUpdate.Add(new MySystem(world));
+        OnUpdate.Add(new ECSGame.ExampleSystem(world));
 
         ///
         OnFixedUpdate = new ECS.Systems(world);

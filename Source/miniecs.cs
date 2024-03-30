@@ -53,7 +53,9 @@ namespace ECS
 
     public Entity Remove(Type type)
     {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
       World.GetStorage(type).Remove(Id);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
       World.DecComponentCount(Id);
       return this;
     }
@@ -62,7 +64,9 @@ namespace ECS
     {
       if (Has(type))
       {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         World.GetStorage(type).Remove(Id);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         World.DecComponentCount(Id);
       }
       return this;
@@ -98,7 +102,9 @@ namespace ECS
     {
       foreach (var type in World.pools.Keys)
         if (Has(type))
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
           World.GetStorage(type).Remove(Id);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
       World.component_counts.Remove(Id);
     }
 
@@ -136,7 +142,9 @@ namespace ECS
         pool = new Pool<T>();
         pools.Add(typeof(T), pool);
       }
+#pragma warning disable CS8603 // Possible null reference return.
       return pool as Pool<T>;
+#pragma warning restore CS8603 // Possible null reference return.
     }
 
     public ComponentEnumerable Each<T>() where T : struct

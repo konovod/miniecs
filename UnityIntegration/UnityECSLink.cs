@@ -1,6 +1,6 @@
 using UnityEngine;
 using ECS;
-
+using System;
 
 // ECS side of the link
 namespace UnityECSLink
@@ -9,6 +9,10 @@ namespace UnityECSLink
   public struct LinkedGameObject
   {
     public GameObject Obj;
+    public LinkedGameObject(GameObject obj)
+    {
+      Obj = obj;
+    }
   };
 
   public struct DestroyGameObject { };
@@ -35,13 +39,38 @@ namespace UnityECSLink
       foreach (var ent in world.Each<InstantiateGameObject>())
       {
         var info = ent.Get<InstantiateGameObject>();
-        LinkedGameObject linked;
-        linked.Obj = GameObject.Instantiate(info.Template, info.pos, info.rot);
+        var obj = GameObject.Instantiate(info.Template, info.pos, info.rot);
         ent.Remove<InstantiateGameObject>();
-        ent.Add(linked);
-        var ReverseLink = linked.Obj.AddComponent<LinkedEntity>();
+        ent.Add(new LinkedGameObject(obj));
+        var ReverseLink = obj.AddComponent<LinkedEntity>();
         ReverseLink.entity = ent;
       }
     }
   }
+
+  public interface IComponentProvider
+  {
+    public void ProvideComponent(ECS.Entity entity);
+
+  }
+
+  public abstract class ComponentProvider<T> : MonoBehaviour, IComponentProvider where T : struct
+  {
+    [SerializeField]
+    protected T value;
+
+    public void ProvideComponent(ECS.Entity entity)
+    {
+      entity.Add(value);
+      Destroy(this);
+    }
+
+    void Awake()
+    {
+      gameObject.GetComponent<CreateECSEntity>().providers.Add(this);
+    }
+
+  }
 }
+
+
