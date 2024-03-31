@@ -23,9 +23,11 @@ public class ECSWorldContainer : MonoBehaviour
         ///
         OnFixedUpdate = new ECS.Systems(world);
         ////////////////// add here systems that is called on FixedUpdate
-        // OnFixedUpdate.Add(new MySystem(world));
+        ///
 
         ///
+        OnFixedUpdate.Add(new ProcessRemoveAtTime(world));
+        OnFixedUpdate.DelHere<RemoveRequest>();
 
     }
 
