@@ -3,6 +3,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.Text;
 
 namespace UnitTests
 {
@@ -365,6 +366,17 @@ namespace UnitTests
             Assert.That(world.FirstComponent<Comp1>().V, Is.EqualTo(124));
             ent.Destroy();
             Assert.Throws<Exception>(() => { world.FirstComponent<Comp1>(); });
+        }
+
+        [Test]
+        public void AddDefaultComponent()
+        {
+            var world = new ECS.World();
+            world.GetStorage<Comp1>();
+            var ent = world.NewEntity();
+            Type typ = ((new Random()).Next(1, 2) < 3.0) ? typeof(Comp1) : typeof(Comp2);
+            ent.AddDefault(typ);
+            Assert.That(ent.Get<Comp1>().V, Is.EqualTo(0));
         }
 
     }

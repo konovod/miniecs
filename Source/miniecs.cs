@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System;
 using System.Diagnostics;
+using System.Linq;
 
 namespace ECS
 {
@@ -18,6 +19,15 @@ namespace ECS
       Pool<T> pool = World.GetStorage<T>();
       pool.Add(Id, item);
       World.IncComponentCount(Id);
+      return this;
+    }
+
+    public Entity AddDefault(Type type)
+    {
+      var pool = World.GetStorage(type);
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+      pool.AddDefault(Id);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
       return this;
     }
 
@@ -219,6 +229,7 @@ namespace ECS
     void Remove(int id);
     int IdByIndex(int id);
     void Clear();
+    void AddDefault(int id);
   }
 
   // Created because older c# do not support getting ref on a list element
@@ -275,11 +286,23 @@ namespace ECS
     }
     public void Add(int id, T item)
     {
+      var index = AddIndex(id);
+      Items.Items[index] = item;
+    }
+
+    public void AddDefault(int id)
+    {
+      var index = AddIndex(id);
+      Items.Items[index] = default;
+    }
+
+    public int AddIndex(int id)
+    {
       Items.Add(default);
       Entities.Add(id);
       int index = Items.Count - 1;
       IndexByEntity.Add(id, index);
-      Items.Items[index] = item;
+      return index;
     }
 
     public int IndexById(int id)
@@ -315,6 +338,7 @@ namespace ECS
     {
       return new ComponentEnumerator(world, type);
     }
+
   }
   public readonly struct WorldEnumerable
   {

@@ -30,7 +30,7 @@ public class ECSWorldContainer : MonoBehaviour
         ///
 
         ///
-        OnFixedUpdate.Add(new ProcessRemoveAtTime(world));
+        OnFixedUpdate.Add(new ProcessComponentRequests(world));
         OnFixedUpdate.DelHere<RemoveRequest>();
 
     }
