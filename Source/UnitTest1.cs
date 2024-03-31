@@ -377,6 +377,8 @@ namespace UnitTests
             Type typ = ((new Random()).Next(1, 2) < 3.0) ? typeof(Comp1) : typeof(Comp2);
             ent.AddDefault(typ);
             Assert.That(ent.Get<Comp1>().V, Is.EqualTo(0));
+            ent.Remove(typ);
+            Assert.That(world.EntitiesCount, Is.EqualTo(0));
         }
 
     }
