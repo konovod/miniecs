@@ -182,6 +182,22 @@ namespace ECS
       else
         return 0;
     }
+
+    public T FirstComponent<T>() where T : struct
+    {
+      var pool = GetStorage<T>();
+      if (pool.Count() == 0)
+        throw new Exception("No components in pool");
+      return pool.Items.Items[0];
+    }
+    public ref T RefFirstComponent<T>() where T : struct
+    {
+      var pool = GetStorage<T>();
+      if (pool.Count() == 0)
+        throw new Exception("No components in pool");
+      return ref pool.Items.Items[0];
+    }
+
     public int CountComponents(Type type)
     {
       if (pools.TryGetValue(type, out IPool? result))

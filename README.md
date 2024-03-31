@@ -40,3 +40,4 @@ Not intended for general use, almost no safety checks - take LeoECS, Morpeh, Dra
  - `entity.RemoveIfPresent<Comp1>()` # Удаление компонента Comp1 с сущности entity если он присутствует на ней
  - `entity.Set(new Comp1)` # Добавление или замена существующего компонента Comp1 на сущности entity
  - в `Remove, Has, RemoveIfPresent, CountComponents` можно передавать определяемый в рантайме Type.
+ - `world.FirstComponent<Comp1>` и `world.RefFirstComponent<Comp1>` возвращают первый из компонентов Comp1 в мире. удобно для синглтон-компонентов

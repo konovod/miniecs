@@ -354,5 +354,18 @@ namespace UnitTests
             Assert.That(world.EntitiesCount, Is.EqualTo(0));
         }
 
+        [Test]
+        public void Firstcomponent()
+        {
+            var world = new ECS.World();
+            var ent = world.NewEntity();
+            ent.Add(new Comp1(123));
+            Assert.That(world.FirstComponent<Comp1>().V, Is.EqualTo(123));
+            world.RefFirstComponent<Comp1>().V += 1;
+            Assert.That(world.FirstComponent<Comp1>().V, Is.EqualTo(124));
+            ent.Destroy();
+            Assert.Throws<Exception>(() => { world.FirstComponent<Comp1>(); });
+        }
+
     }
 }
