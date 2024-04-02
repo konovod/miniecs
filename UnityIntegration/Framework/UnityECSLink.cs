@@ -1,6 +1,7 @@
 using UnityEngine;
 using ECS;
 using System;
+using UnityEngine.AI;
 
 // ECS side of the link
 namespace UnityECSLink
@@ -12,6 +13,20 @@ namespace UnityECSLink
     public LinkedGameObject(GameObject obj)
     {
       Obj = obj;
+    }
+
+    public Transform Transform()
+    {
+      return Obj.transform;
+    }
+  };
+
+  public struct LinkedComponent<T> where T : Component
+  {
+    public T v;
+    public LinkedComponent(T comp)
+    {
+      v = comp;
     }
   };
 
@@ -41,6 +56,7 @@ namespace UnityECSLink
         var info = ent.Get<InstantiateGameObject>();
         var obj = GameObject.Instantiate(info.Template, info.pos, info.rot);
         ent.Add(new LinkedGameObject(obj));
+        ECSGame.Config.LinkComponents(obj, ent);
         ent.Remove<InstantiateGameObject>();
         var ReverseLink = obj.AddComponent<LinkedEntity>();
         ReverseLink.entity = ent;

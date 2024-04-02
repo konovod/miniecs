@@ -42,3 +42,7 @@ Not intended for general use, almost no safety checks - take LeoECS, Morpeh, Dra
  - в `Remove, Has, RemoveIfPresent, CountComponents` можно передавать определяемый в рантайме Type.
  - `world.FirstComponent<Comp1>` и `world.RefFirstComponent<Comp1>` возвращают первый из компонентов Comp1 в мире. удобно для синглтон-компонентов
  - `entity.AddDefault(type)` # Добавление компонента типа type известного в рантайме
+
+
+## Интеграция с Unity
+ - добавить содержимое папки UnityIntegration, добавить miniecs.cs в проект

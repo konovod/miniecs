@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 using System;
 using ECS;
 using UnityECSLink;
+using Unity.VisualScripting;
 
 
 namespace UnityECSLink
@@ -31,6 +33,7 @@ namespace UnityECSLink
                 linked = gameObject.AddComponent<LinkedEntity>();
                 linked.entity = entity;
                 entity.Add(new LinkedGameObject(gameObject));
+                ECSGame.Config.LinkComponents(gameObject, entity);
             }
         }
     }
