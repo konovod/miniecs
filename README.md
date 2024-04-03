@@ -41,7 +41,8 @@ Not intended for general use, almost no safety checks - take LeoECS, Morpeh, Dra
  - `entity.Set(new Comp1)` # Добавление или замена существующего компонента Comp1 на сущности entity
  - в `Remove, Has, RemoveIfPresent, CountComponents` можно передавать определяемый в рантайме Type.
  - `world.FirstComponent<Comp1>` и `world.RefFirstComponent<Comp1>` возвращают первый из компонентов Comp1 в мире. удобно для синглтон-компонентов
- - `entity.AddDefault(type)` # Добавление компонента типа type известного в рантайме
+ - `entity.AddDefault(type)` Добавление компонента типа type известного в рантайме
+ - `entity.Alive()` возвращает true если на сущности есть компоненты
 
 
 ## Интеграция с Unity

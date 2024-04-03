@@ -381,5 +381,25 @@ namespace UnitTests
             Assert.That(world.EntitiesCount, Is.EqualTo(0));
         }
 
+        [Test]
+        public void AliveEntity()
+        {
+            var world = new ECS.World();
+            var ent = world.NewEntity();
+            ent.Add(new Comp1(123)).Add(new Comp2("Test"));
+            Assert.That(ent.Alive(), Is.True);
+            ent.Remove<Comp1>();
+            Assert.That(ent.Alive(), Is.True);
+            ent.Remove<Comp2>();
+            Assert.That(ent.Alive(), Is.False);
+
+            ent = world.NewEntity();
+            ent.Add(new Comp1(123)).Add(new Comp2("Test"));
+            Assert.That(ent.Alive(), Is.True);
+            ent.Destroy();
+            Assert.That(ent.Alive(), Is.False);
+        }
+
+
     }
 }

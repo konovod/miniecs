@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System;
 using System.Diagnostics;
-using System.Linq;
 
 namespace ECS
 {
@@ -35,6 +34,11 @@ namespace ECS
     public readonly bool Has<T>() where T : struct
     {
       return World.GetStorage<T>().Has(Id);
+    }
+
+    public bool Alive()
+    {
+      return World.Alive(Id);
     }
 
     public readonly bool Has(Type type)
@@ -145,6 +149,15 @@ namespace ECS
       if (component_counts[id] == 0)
         component_counts.Remove(id);
     }
+
+    internal bool Alive(int id)
+    {
+      if (component_counts.TryGetValue(id, out var value))
+        return value > 0;
+      else
+        return false;
+    }
+
 
     internal Pool<T> GetStorage<T>() where T : struct
     {
@@ -570,6 +583,7 @@ namespace ECS
       Statistics.Add("Total", 0);
     }
 
+    const float STAT_FILTER = 1.0f; //set to 0.1f for smooth stats
     public override void Execute()
     {
       FullTimer.Reset();
@@ -609,11 +623,13 @@ namespace ECS
       i = 0;
       foreach (var child in children)
       {
-        Statistics[child.GetType().ToString()] = Timers[i].ElapsedTicks * 1000.0 / Stopwatch.Frequency;
+        var new_stat = Timers[i].ElapsedTicks * 1000.0 / Stopwatch.Frequency;
+        Statistics[child.GetType().ToString()] = Statistics[child.GetType().ToString()] * (1 - STAT_FILTER) + new_stat * STAT_FILTER;
         i += 1;
       }
       FullTimer.Stop();
-      Statistics["Total"] = FullTimer.ElapsedTicks * 1000.0 / Stopwatch.Frequency;
+      var new_total = FullTimer.ElapsedTicks * 1000.0 / Stopwatch.Frequency;
+      Statistics["Total"] = Statistics["Total"] * (1 - STAT_FILTER) + new_total * STAT_FILTER;
     }
     public override void Teardown()
     {
